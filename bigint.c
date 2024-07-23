@@ -4,6 +4,33 @@
 
 #define DEBUG
 
+struct bigint *bigint_init(int ndigits, size_t bufsz) {
+	int *bi_d = malloc(bufsz);
+	if (!bi_d) {
+		puts("malloc failed to allocate memory; out of memory.");
+		exit(EXIT_FAILURE);
+	}
+
+	struct bigint *bi = malloc(sizeof(int) + sizeof(int *));
+	if (!bi) {
+		puts("malloc failed to allocate memory; out of memory.");
+		exit(EXIT_FAILURE);
+	}
+
+	bi->ndigits = ndigits;
+	bi->d = bi_d;
+
+	return bi;
+}
+
+void bigint_free(struct bigint *bi) {
+	free(bi->d);
+	bi->d = NULL;
+
+	free(bi);
+	bi = NULL;
+}
+
 void bigint_pushc(struct bigint *bi, const int x) {
 	struct bigint *new_bi = realloc(bi, sizeof(int) * (bi->ndigits + 2));
 	if (!new_bi) puts("realloc failed to allocate memory; out of memory.");
