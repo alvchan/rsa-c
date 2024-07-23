@@ -4,8 +4,8 @@
 
 #define DEBUG
 
-struct bigint *bigint_init(int ndigits, size_t bufsz) {
-	int *bi_d = malloc(bufsz);
+struct bigint *bigint_init(int ndigits) {
+	int *bi_d = malloc(sizeof(int) * ndigits);
 	if (!bi_d) {
 		puts("malloc failed to allocate memory; out of memory.");
 		exit(EXIT_FAILURE);
@@ -33,7 +33,7 @@ void bigint_free(struct bigint *bi) {
 
 void bigint_pushc(struct bigint *bi, const int x) {
 	if (!bi) {
-		bi = bigint_init(1, sizeof(int));
+		bi = bigint_init(1);
 		return;
 	}
 
@@ -59,7 +59,7 @@ void bigint_popc(struct bigint *bi) {
 	bi->ndigits--;
 }
 
-struct bigint bigint_add(const struct bigint *a, const struct bigint *b) {
+struct bigint *bigint_add(const struct bigint *a, const struct bigint *b) {
 	struct bigint *sum = NULL;
 
 	int carry = 0;
@@ -72,6 +72,7 @@ struct bigint bigint_add(const struct bigint *a, const struct bigint *b) {
 	return sum;
 }
 
+/*
 struct bigint bigint_mult(const struct bigint *a, const struct bigint *b) {
 	struct bigint product;
 
@@ -81,6 +82,7 @@ struct bigint bigint_mult(const struct bigint *a, const struct bigint *b) {
 
 	return product;
 }
+*/
 
 void bigint_print(struct bigint *bi) {
 	for (int i = bi->ndigits-1; i >= 0; i--) {
@@ -91,13 +93,13 @@ void bigint_print(struct bigint *bi) {
 
 #ifdef DEBUG
 int main(void) {
-	int arr_x[] = {2, 4};
-	int arr_y[] = {5, 0};
-	const struct bigint x = {2, arr_x};
-	const struct bigint y = {2, arr_y};
-	struct bigint sum = bigint_add(&x, &y);
-	for (int i = 2; i >= 0; i--) {
-		printf("%d\n", sum.d[i]);
-	}
+	struct bigint *x = bigint_init(2);
+	x->d = (int []) {2, 4};
+
+	struct bigint *y = bigint_init(2);
+	y->d = (int []) {5, 0};
+
+	struct bigint *sum = bigint_add(x, y);
+	bigint_print(sum);
 }
 #endif
