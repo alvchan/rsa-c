@@ -1,5 +1,5 @@
 struct bigint {
 	int ndigits;
-	char d[];
+	int *d;
 }
 
