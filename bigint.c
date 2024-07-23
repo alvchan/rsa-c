@@ -72,6 +72,7 @@ struct bigint *bigint_add(const struct bigint *a, const struct bigint *b) {
 	return sum;
 }
 
+/*
 struct bigint bigint_mult(const struct bigint *a, const struct bigint *b) {
 	struct bigint product;
 
@@ -81,6 +82,7 @@ struct bigint bigint_mult(const struct bigint *a, const struct bigint *b) {
 
 	return product;
 }
+*/
 
 void bigint_print(struct bigint *bi) {
 	for (int i = bi->ndigits-1; i >= 0; i--) {
@@ -91,11 +93,11 @@ void bigint_print(struct bigint *bi) {
 
 #ifdef DEBUG
 int main(void) {
-	const struct bigint *x = bigint_init(2);
-	x->d = {2, 4};
+	struct bigint *x = bigint_init(2);
+	x->d = (int []) {2, 4};
 
-	const struct bigint *y = bigint_init(2);
-	x->d = {5, 0};
+	struct bigint *y = bigint_init(2);
+	y->d = (int []) {5, 0};
 
 	struct bigint *sum = bigint_add(x, y);
 	bigint_print(sum);
