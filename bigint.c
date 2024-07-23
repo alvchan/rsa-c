@@ -33,16 +33,24 @@ void bigint_free(struct bigint *bi) {
 
 void bigint_pushc(struct bigint *bi, const int x) {
 	struct bigint *new_bi = realloc(bi, sizeof(int) * (bi->ndigits + 2));
-	if (!new_bi) puts("realloc failed to allocate memory; out of memory.");
+	if (!new_bi) {
+		puts("realloc failed to allocate memory; out of memory.");
+		exit(EXIT_FAILURE);
+	}
 	bi = new_bi;
+
 	bi->ndigits++;
 	bi->d[bi->ndigits-1] = x;
 }
 
 void bigint_popc(struct bigint *bi) {
 	struct bigint *new_bi = realloc(bi, sizeof(int) * bi->ndigits);
-	if (!new_bi) puts("realloc failed to allocate memory; out of memory.");
+	if (!new_bi) {
+		puts("realloc failed to allocate memory; out of memory.");
+		exit(EXIT_FAILURE);
+	}
 	bi = new_bi;
+
 	bi->ndigits--;
 }
 
