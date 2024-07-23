@@ -17,6 +17,19 @@ void bigint_popc(struct bigint *bi) {
 	bi->ndigits--;
 }
 
+struct bigint bigint_add(const struct bigint *a, const struct bigint *b) {
+	struct bigint sum;
+
+	int carry = 0;
+	for (int i = 0; i < a->ndigits; i++) {
+		int digit_sum = a + b + carry;
+		pushc(&sum, digit_sum % 10);
+		carry = digit_sum / 10;
+	}
+
+	return sum;
+}
+
 #ifdef DEBUG
 int main(void) {
 	;
