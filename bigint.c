@@ -59,7 +59,7 @@ void bigint_popc(struct bigint *bi) {
 	bi->ndigits--;
 }
 
-struct bigint bigint_add(const struct bigint *a, const struct bigint *b) {
+struct bigint *bigint_add(const struct bigint *a, const struct bigint *b) {
 	struct bigint *sum = NULL;
 
 	int carry = 0;
@@ -91,13 +91,13 @@ void bigint_print(struct bigint *bi) {
 
 #ifdef DEBUG
 int main(void) {
-	int arr_x[] = {2, 4};
-	int arr_y[] = {5, 0};
-	const struct bigint x = {2, arr_x};
-	const struct bigint y = {2, arr_y};
-	struct bigint sum = bigint_add(&x, &y);
-	for (int i = 2; i >= 0; i--) {
-		printf("%d\n", sum.d[i]);
-	}
+	const struct bigint *x = bigint_init(2);
+	x->d = {2, 4};
+
+	const struct bigint *y = bigint_init(2);
+	x->d = {5, 0};
+
+	struct bigint *sum = bigint_add(x, y);
+	bigint_print(sum);
 }
 #endif
