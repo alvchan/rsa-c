@@ -5,17 +5,17 @@
 #define DEBUG
 
 void bigint_pushc(struct bigint *bi, const int x) {
-	int *tmp_d = realloc(bi, bi->ndigits+sizeof(int));
-	if (!tmp_d) puts("realloc failed to allocate memory; out of memory.");
-	bi->d = tmp_d;
+	struct bigint *new_bi = realloc(bi, sizeof(int) * (bi->ndigits + 2));
+	if (!new_bi) puts("realloc failed to allocate memory; out of memory.");
+	bi = new_bi;
 	bi->ndigits++;
 	bi->d[bi->ndigits-1] = x;
 }
 
 void bigint_popc(struct bigint *bi) {
-	int *tmp_d = realloc(bi, bi->ndigits-sizeof(int));
-	if (!tmp_d) puts("realloc failed to allocate memory; out of memory.");
-	bi->d = tmp_d;
+	struct bigint *new_bi = realloc(bi, sizeof(int) * bi->ndigits);
+	if (!new_bi) puts("realloc failed to allocate memory; out of memory.");
+	bi = new_bi;
 	bi->ndigits--;
 }
 
