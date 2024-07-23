@@ -30,6 +30,16 @@ struct bigint bigint_add(const struct bigint *a, const struct bigint *b) {
 	return sum;
 }
 
+struct bigint bigint_mult(const struct bigint *a, const struct bigint *b) {
+	struct bigint product;
+
+	for (int i = 0; i < b->ndigits; i++) {
+		product = bigint_add(&product, a);
+	}
+
+	return product;
+}
+
 #ifdef DEBUG
 int main(void) {
 	;
