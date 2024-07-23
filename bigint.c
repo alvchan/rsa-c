@@ -44,6 +44,13 @@ struct bigint bigint_mult(const struct bigint *a, const struct bigint *b) {
 
 #ifdef DEBUG
 int main(void) {
-	;
+	int arr_x[] = {2, 4};
+	int arr_y[] = {5, 0};
+	const struct bigint x = {2, arr_x};
+	const struct bigint y = {2, arr_y};
+	struct bigint sum = bigint_add(&x, &y);
+	for (int i = 2; i >= 0; i--) {
+		printf("%d\n", sum.d[i]);
+	}
 }
 #endif
