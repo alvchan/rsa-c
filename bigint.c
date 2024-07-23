@@ -82,6 +82,13 @@ struct bigint bigint_mult(const struct bigint *a, const struct bigint *b) {
 	return product;
 }
 
+void bigint_print(struct bigint *bi) {
+	for (int i = bi->ndigits-1; i >= 0; i--) {
+		printf("%d", bi->d[i]);
+	}
+	printf("\n");
+}
+
 #ifdef DEBUG
 int main(void) {
 	int arr_x[] = {2, 4};
