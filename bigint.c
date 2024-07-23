@@ -32,6 +32,11 @@ void bigint_free(struct bigint *bi) {
 }
 
 void bigint_pushc(struct bigint *bi, const int x) {
+	if (!bi) {
+		bi = bigint_init(1, sizeof(int));
+		return;
+	}
+
 	struct bigint *new_bi = realloc(bi, sizeof(int) * (bi->ndigits + 2));
 	if (!new_bi) {
 		puts("realloc failed to allocate memory; out of memory.");
@@ -55,12 +60,12 @@ void bigint_popc(struct bigint *bi) {
 }
 
 struct bigint bigint_add(const struct bigint *a, const struct bigint *b) {
-	struct bigint sum;
+	struct bigint *sum = NULL;
 
 	int carry = 0;
 	for (int i = 0; i < a->ndigits; i++) {
 		const int digit_sum = a->d[i] + b->d[i] + carry;
-		bigint_pushc(&sum, digit_sum % 10);
+		bigint_pushc(sum, digit_sum % 10);
 		carry = digit_sum / 10;
 	}
 
