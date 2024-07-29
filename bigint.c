@@ -22,7 +22,7 @@ struct bigint *bigint_init(unsigned int ndigits) {
 
 	bi->ndigits = ndigits;
 	bi->d = tmp_d;
-	if (ndigits == 1) bi->d[0] = 0;
+	if (ndigits == 0 || ndigits == 1) bi->d[0] = 0;
 
 	return bi;
 }
@@ -70,9 +70,21 @@ void bigint_popc(struct bigint *bi) {
 struct bigint *bigint_add(const struct bigint *a, const struct bigint *b) {
 	struct bigint *sum = bigint_init(0);
 
+	/* TODO: consolidate */
+	struct bigint *greatest = (a->ndigits >= b->ndigits) ? a : b;
+	struct bigint *least = (a->ndigits < b->ndigits) ? a : b;
+
 	int carry = 0;
-	for (int i = 0; i < a->ndigits; i++) {
+	/* add up all digits in a common range */
+	for (int i = 0; i < least->ndigits; i++) {
 		int digit_sum = a->d[i] + b->d[i] + carry;
+		bigint_pushc(sum, digit_sum % 10);
+		carry = digit_sum / 10;
+	}
+
+	/* default to larger bigint digits if unevenly sized */
+	for (int i = least->ndigits; i < greatest->ndigits; i++) {
+		int digit_sum = greatest->d[i] + carry;
 		bigint_pushc(sum, digit_sum % 10);
 		carry = digit_sum / 10;
 	}
@@ -111,7 +123,9 @@ struct bigint *bigint_mult(const struct bigint *a, const struct bigint *b) {
 			carry /= 10;
 		}
 
-		bigint_add(product, row_product);
+		struct bigint *tmp = bigint_add(product, row_product);
+		bigint_free(product);
+		product = tmp;
 
 		bigint_free(row_product);
 	}
