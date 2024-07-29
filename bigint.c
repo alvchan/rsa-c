@@ -19,35 +19,35 @@ struct bigint *bigint_init(int ndigits) {
 
 	bi->ndigits = ndigits;
 	bi->d = bi_d;
+	if (ndigits == 1) bi->d[0] = 0;
 
 	return bi;
 }
 
 void bigint_free(struct bigint *bi) {
-	free(bi->d);
-	bi->d = NULL;
-
-	free(bi);
-	bi = NULL;
+	if (bi->d != NULL) free(bi->d);
+	if (bi != NULL) free(bi);
 }
 
 void bigint_pushc(struct bigint *bi, const int x) {
 	if (!bi) {
 		bi = bigint_init(1);
+		bi->d[0] = x;
 		return;
 	}
 
-	struct bigint *new_bi = realloc(bi, sizeof(int) * (bi->ndigits + 2));
-	if (!new_bi) {
+	int *tmp_bi_d = realloc(bi->d, (bi->ndigits+1) * sizeof(int));
+	if (!tmp_bi_d) {
 		puts("realloc failed to allocate memory; out of memory.");
 		exit(EXIT_FAILURE);
 	}
-	bi = new_bi;
+	bi->d = tmp_bi_d;
 
 	bi->ndigits++;
 	bi->d[bi->ndigits-1] = x;
 }
 
+/*
 void bigint_popc(struct bigint *bi) {
 	struct bigint *new_bi = realloc(bi, sizeof(int) * bi->ndigits);
 	if (!new_bi) {
@@ -58,9 +58,10 @@ void bigint_popc(struct bigint *bi) {
 
 	bi->ndigits--;
 }
+*/
 
 struct bigint *bigint_add(const struct bigint *a, const struct bigint *b) {
-	struct bigint *sum = NULL;
+	struct bigint *sum = bigint_init(1);
 
 	int carry = 0;
 	for (int i = 0; i < a->ndigits; i++) {
@@ -85,10 +86,12 @@ struct bigint bigint_mult(const struct bigint *a, const struct bigint *b) {
 */
 
 void bigint_print(struct bigint *bi) {
-	for (int i = bi->ndigits-1; i >= 0; i--) {
-		printf("%d", bi->d[i]);
+	if (bi->ndigits >= 1) {
+		for (int i = bi->ndigits-1; i >= 0; i--) {
+			printf("%d", bi->d[i]);
+		}
+		printf("\n");
 	}
-	printf("\n");
 }
 
 #ifdef DEBUG
@@ -101,5 +104,9 @@ int main(void) {
 
 	struct bigint *sum = bigint_add(x, y);
 	bigint_print(sum);
+
+	bigint_free(sum);
+	bigint_free(y);
+	bigint_free(x);
 }
 #endif
