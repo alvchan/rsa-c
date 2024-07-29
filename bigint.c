@@ -71,8 +71,8 @@ struct bigint *bigint_add(const struct bigint *a, const struct bigint *b) {
 	struct bigint *sum = bigint_init(0);
 
 	/* TODO: consolidate */
-	struct bigint *greatest = (a->ndigits >= b->ndigits) ? a : b;
-	struct bigint *least = (a->ndigits < b->ndigits) ? a : b;
+	const struct bigint *greatest = (a->ndigits >= b->ndigits) ? a : b;
+	const struct bigint *least = (a->ndigits < b->ndigits) ? a : b;
 
 	int carry = 0;
 	/* add up all digits in a common range */
