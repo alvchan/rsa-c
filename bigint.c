@@ -132,15 +132,21 @@ void bigint_print(struct bigint *bi) {
 int main(void) {
 	struct bigint *x = bigint_init(2);
 	free(x->d);
-	x->d = (int []) {2, 4};
+	//x->d = (int []) {2, 4};
+	x->d = (int []) {9, 9};
 
 	struct bigint *y = bigint_init(2);
 	free(y->d);
-	y->d = (int []) {5, 0};
+	//y->d = (int []) {5, 0};
+	y->d = (int []) {9, 9};
 
 	struct bigint *sum = bigint_add(x, y);
 	bigint_print(sum);
 
+	struct bigint *product = bigint_mult(x, y);
+	bigint_print(product);
+
+	bigint_free(product);
 	bigint_free(sum);
 	free(y);
 	free(x);
