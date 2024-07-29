@@ -5,20 +5,20 @@
 #define DEBUG
 
 struct bigint *bigint_init(int ndigits) {
-	int *bi_d = malloc(sizeof(int) * ndigits);
-	if (!bi_d) {
+	int *tmp_d = malloc(sizeof(int) * ndigits);
+	if (!tmp_d) {
 		puts("malloc failed to allocate memory; out of memory.");
 		exit(EXIT_FAILURE);
 	}
 
-	struct bigint *bi = malloc(sizeof(int) + sizeof(int *));
+	struct bigint *bi = malloc(sizeof(struct bigint));
 	if (!bi) {
 		puts("malloc failed to allocate memory; out of memory.");
 		exit(EXIT_FAILURE);
 	}
 
 	bi->ndigits = ndigits;
-	bi->d = bi_d;
+	bi->d = tmp_d;
 	if (ndigits == 1) bi->d[0] = 0;
 
 	return bi;
@@ -26,7 +26,11 @@ struct bigint *bigint_init(int ndigits) {
 
 void bigint_free(struct bigint *bi) {
 	if (bi->d != NULL) free(bi->d);
-	if (bi != NULL) free(bi);
+
+	if (bi != NULL) {
+		free(bi);
+		bi = NULL;
+	}
 }
 
 void bigint_pushc(struct bigint *bi, const int x) {
@@ -36,12 +40,12 @@ void bigint_pushc(struct bigint *bi, const int x) {
 		return;
 	}
 
-	int *tmp_bi_d = realloc(bi->d, (bi->ndigits+1) * sizeof(int));
-	if (!tmp_bi_d) {
+	int *tmp_d = realloc(bi->d, (bi->ndigits+1) * sizeof(int));
+	if (!tmp_d) {
 		puts("realloc failed to allocate memory; out of memory.");
 		exit(EXIT_FAILURE);
 	}
-	bi->d = tmp_bi_d;
+	bi->d = tmp_d;
 
 	bi->ndigits++;
 	bi->d[bi->ndigits-1] = x;
@@ -97,16 +101,18 @@ void bigint_print(struct bigint *bi) {
 #ifdef DEBUG
 int main(void) {
 	struct bigint *x = bigint_init(2);
+	free(x->d);
 	x->d = (int []) {2, 4};
 
 	struct bigint *y = bigint_init(2);
+	free(y->d);
 	y->d = (int []) {5, 0};
 
 	struct bigint *sum = bigint_add(x, y);
 	bigint_print(sum);
 
 	bigint_free(sum);
-	bigint_free(y);
-	bigint_free(x);
+	free(y);
+	free(x);
 }
 #endif
