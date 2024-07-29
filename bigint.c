@@ -36,7 +36,7 @@ void bigint_free(struct bigint *bi) {
 	}
 }
 
-void bigint_pushc(struct bigint *bi, const int x) {
+void bigint_pushc(struct bigint *bi, int x) {
 	if (!bi) {
 		bi = bigint_init(1);
 		bi->d[0] = x;
@@ -72,25 +72,52 @@ struct bigint *bigint_add(const struct bigint *a, const struct bigint *b) {
 
 	int carry = 0;
 	for (int i = 0; i < a->ndigits; i++) {
-		const int digit_sum = a->d[i] + b->d[i] + carry;
+		int digit_sum = a->d[i] + b->d[i] + carry;
 		bigint_pushc(sum, digit_sum % 10);
 		carry = digit_sum / 10;
+	}
+
+	/* carry extra overflow digits */
+	while (carry > 0) {
+		bigint_pushc(sum, carry % 10);
+		carry /= 10;
 	}
 
 	return sum;
 }
 
-/*
-struct bigint bigint_mult(const struct bigint *a, const struct bigint *b) {
-	struct bigint product;
+struct bigint *bigint_mult(const struct bigint *a, const struct bigint *b) {
+	/* Multiply A by B times and return the product. */
+	struct bigint *product = bigint_init(0);
 
-	for (int i = 0; i < b->ndigits; i++) {
-		product = bigint_add(&product, a);
+	int carry = 0;
+	for (int i = 0; i < b->ndigits; i++) { /* B's digit counter */
+		if (b->d[i] == 0) continue;
+
+		struct bigint *row_product = bigint_init(0);
+		for (int pad = 0; pad < i; pad++) {
+			bigint_pushc(row_product, 0);
+		}
+
+		for (int j = 0; j < a->ndigits; j++) { /* A's digit counter */
+			int digit_product = a->d[j] * b->d[i] + carry;
+			bigint_pushc(row_product, digit_product % 10);
+			carry = digit_product / 10;
+		}
+
+		/* carry extra overflow digits */
+		while (carry > 0) {
+			bigint_pushc(row_product, carry % 10);
+			carry /= 10;
+		}
+
+		bigint_add(product, row_product);
+
+		bigint_free(row_product);
 	}
 
 	return product;
 }
-*/
 
 void bigint_print(struct bigint *bi) {
 	if (bi->ndigits >= 1) {
