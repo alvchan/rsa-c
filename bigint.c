@@ -4,8 +4,11 @@
 
 #define DEBUG
 
-struct bigint *bigint_init(int ndigits) {
-	int *tmp_d = malloc(sizeof(int) * ndigits);
+struct bigint *bigint_init(unsigned int ndigits) {
+	int *tmp_d;
+	if (ndigits != 0) tmp_d = malloc(sizeof(int) * ndigits);
+	else tmp_d = malloc(sizeof(int));
+
 	if (!tmp_d) {
 		puts("malloc failed to allocate memory; out of memory.");
 		exit(EXIT_FAILURE);
@@ -65,7 +68,7 @@ void bigint_popc(struct bigint *bi) {
 */
 
 struct bigint *bigint_add(const struct bigint *a, const struct bigint *b) {
-	struct bigint *sum = bigint_init(1);
+	struct bigint *sum = bigint_init(0);
 
 	int carry = 0;
 	for (int i = 0; i < a->ndigits; i++) {

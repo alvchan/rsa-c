@@ -1,9 +1,9 @@
 struct bigint {
-	int ndigits;
+	unsigned int ndigits;
 	int *d;
 };
 
-struct bigint *bigint_init(const int ndigits);
+struct bigint *bigint_init(unsigned int ndigits);
 void bigint_free(struct bigint *bi);
 void bigint_pushc(struct bigint *bi, const int x);
 void bigint_popc(struct bigint *bi);
