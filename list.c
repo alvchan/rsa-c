@@ -2,13 +2,14 @@
 #include <stdlib.h>
 #include "list.h"
 
-struct list *list_init(void *val) {
+struct list *list_init(void) {
+	/* Initialize and allocate space for a linked list node. */
 	struct list *out = malloc(sizeof(struct list));
 	if (!out) {
 		fputs("malloc failed to allocate memory.", stderr);
 	}
 
-	out->val = val;
+	out->val = NULL;
 	out->next = NULL;
 	out->prev = NULL;
 
@@ -16,13 +17,11 @@ struct list *list_init(void *val) {
 }
 
 void list_free(struct list *l) {
-	free(l);
-}
-
-void list_free_all(struct list *l) {
+	/* Clean up and deallocate nodes from a list. */
 	struct list *head = l;
-	struct list *next = NULL;
+	struct list *next = NULL; /* needed to avoid free into head->next */
 
+	/* traverse list and free each node */
 	while (head != NULL) {
 		next = head->next;
 		list_free(head);
@@ -31,24 +30,44 @@ void list_free_all(struct list *l) {
 }
 
 void list_append(struct list *l, void *val) {
+	/* Add an element to the end of the list. */
 	struct list *head = l;
 
+	/* walk to end of list */
 	while (head->next != NULL) {
 		head = head->next;
 	}
 
+	/* create and relink nodes */
 	head->next = list_init(val);
 	head->next->prev = head->next;
 }
 
 struct list *list_prepend(struct list *l, void *val) {
+	/* Add an element to the start of the list. */
 	struct list *out = list_init(val);
 
 	out->next = l;
 	l->prev = out;
 	l = l->prev;
 
-	return l;
+	return l; /* ret new start of list due to pointer being a copy in params */
+}
+
+struct list *list_get(const struct list *src, int index) {
+	/* Traverse list and return node at index of src. */
+	struct list *head = (struct list *) src;
+
+	for (int i = 0; i <= index; i++) {
+		if (!head) {
+			puts("error (list_get): index out of bounds");
+			return;
+		}
+
+		head = head->next;
+	}
+
+	return head;
 }
 
 /*
@@ -80,7 +99,7 @@ int main(void) {
 		head = head->next;
 	}
 
-	list_free_all(a_list);
-	list_free_all(b_list);
+	list_free(a_list);
+	list_free(b_list);
 }
 */
