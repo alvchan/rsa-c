@@ -7,8 +7,10 @@
 
 struct bigint *bigint_init(unsigned int ndigits) {
 	uint8_t *tmp_d;
-	if (ndigits != 0) tmp_d = malloc(sizeof(int) * ndigits);
-	else tmp_d = malloc(sizeof(int)); /* no digits, malloc a placeholder */
+
+	/* allocate space to store given # of digits */
+	if (ndigits != 0) tmp_d = malloc(sizeof(uint8_t) * ndigits);
+	else tmp_d = malloc(sizeof(uint8_t)); /* no digits, malloc a placeholder */
 
 	if (!tmp_d) {
 		puts("malloc failed to allocate memory; out of memory.");
@@ -75,7 +77,7 @@ struct bigint *bigint_add(const struct bigint *a, const struct bigint *b) {
 	const struct bigint *greatest = (a->ndigits >= b->ndigits) ? a : b;
 	const struct bigint *least = (a->ndigits < b->ndigits) ? a : b;
 
-	int carry = 0;
+	uint8_t carry = 0;
 	/* add up all digits in a common range */
 	for (int i = 0; i < least->ndigits; i++) { /* TODO: possibly prone to overflow */
 		uint8_t digit_sum = a->d[i] + b->d[i] + carry;
