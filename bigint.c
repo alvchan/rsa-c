@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "bigint.h"
@@ -5,9 +6,9 @@
 #define DEBUG
 
 struct bigint *bigint_init(unsigned int ndigits) {
-	int *tmp_d;
+	uint8_t *tmp_d;
 	if (ndigits != 0) tmp_d = malloc(sizeof(int) * ndigits);
-	else tmp_d = malloc(sizeof(int));
+	else tmp_d = malloc(sizeof(int)); /* no digits, malloc a placeholder */
 
 	if (!tmp_d) {
 		puts("malloc failed to allocate memory; out of memory.");
@@ -36,14 +37,14 @@ void bigint_free(struct bigint *bi) {
 	}
 }
 
-void bigint_pushc(struct bigint *bi, int x) {
+void bigint_pushc(struct bigint *bi, uint8_t x) {
 	if (!bi) {
 		bi = bigint_init(1);
 		bi->d[0] = x;
 		return;
 	}
 
-	int *tmp_d = realloc(bi->d, (bi->ndigits+1) * sizeof(int));
+	uint8_t *tmp_d = realloc(bi->d, (bi->ndigits+1) * sizeof(uint8_t));
 	if (!tmp_d) {
 		puts("realloc failed to allocate memory; out of memory.");
 		exit(EXIT_FAILURE);
@@ -76,15 +77,15 @@ struct bigint *bigint_add(const struct bigint *a, const struct bigint *b) {
 
 	int carry = 0;
 	/* add up all digits in a common range */
-	for (int i = 0; i < least->ndigits; i++) {
-		int digit_sum = a->d[i] + b->d[i] + carry;
+	for (int i = 0; i < least->ndigits; i++) { /* TODO: possibly prone to overflow */
+		uint8_t digit_sum = a->d[i] + b->d[i] + carry;
 		bigint_pushc(sum, digit_sum % 10);
 		carry = digit_sum / 10;
 	}
 
 	/* default to larger bigint digits if unevenly sized */
 	for (int i = least->ndigits; i < greatest->ndigits; i++) {
-		int digit_sum = greatest->d[i] + carry;
+		uint8_t digit_sum = greatest->d[i] + carry;
 		bigint_pushc(sum, digit_sum % 10);
 		carry = digit_sum / 10;
 	}
@@ -102,17 +103,17 @@ struct bigint *bigint_mult(const struct bigint *a, const struct bigint *b) {
 	/* Multiply A by B times and return the product. */
 	struct bigint *product = bigint_init(0);
 
-	int carry = 0;
+	uint8_t carry = 0;
 	for (int i = 0; i < b->ndigits; i++) { /* B's digit counter */
 		if (b->d[i] == 0) continue;
 
 		struct bigint *row_product = bigint_init(0);
-		for (int pad = 0; pad < i; pad++) {
+		for (int pad = 0; pad < i; pad++) { /* lshift for every digit of B */
 			bigint_pushc(row_product, 0);
 		}
 
 		for (int j = 0; j < a->ndigits; j++) { /* A's digit counter */
-			int digit_product = a->d[j] * b->d[i] + carry;
+			long digit_product = a->d[j] * b->d[i] + carry; /* TODO: change to bigint; no guarantee on product size */
 			bigint_pushc(row_product, digit_product % 10);
 			carry = digit_product / 10;
 		}
@@ -147,12 +148,12 @@ int main(void) {
 	struct bigint *x = bigint_init(2);
 	free(x->d);
 	//x->d = (int []) {2, 4};
-	x->d = (int []) {9, 9};
+	x->d = (uint8_t []) {9, 9};
 
 	struct bigint *y = bigint_init(2);
 	free(y->d);
 	//y->d = (int []) {5, 0};
-	y->d = (int []) {9, 9};
+	y->d = (uint8_t []) {9, 9};
 
 	struct bigint *sum = bigint_add(x, y);
 	bigint_print(sum);
