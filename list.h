@@ -1,3 +1,5 @@
+#include <stdint.h>
+
 struct list {
 	uint8_t val;
 	struct list *next;

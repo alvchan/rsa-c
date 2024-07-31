@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include "list.h"
 
 struct bigint {

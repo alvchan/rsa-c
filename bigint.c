@@ -1,11 +1,7 @@
 #include <assert.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include "bigint.h"
-
-#define DEBUG
 
 struct bigint *bigint_init(void) {
 	/* Set up and allocate a bigint. */
