@@ -1,5 +1,7 @@
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "list.h"
 
 struct list *list_init(void) {
@@ -9,7 +11,7 @@ struct list *list_init(void) {
 		fputs("malloc failed to allocate memory.", stderr);
 	}
 
-	out->val = NULL;
+	out->val = 0xff; /* placeholder to indicate uninitialized state */
 	out->next = NULL;
 	out->prev = NULL;
 
@@ -19,17 +21,17 @@ struct list *list_init(void) {
 void list_free(struct list *l) {
 	/* Clean up and deallocate nodes from a list. */
 	struct list *head = l;
-	struct list *next = NULL; /* needed to avoid free into head->next */
+	struct list *next; /* needed to avoid free into head->next */
 
 	/* traverse list and free each node */
 	while (head != NULL) {
 		next = head->next;
-		list_free(head);
+		free(head);
 		head = next;
 	}
 }
 
-void list_append(struct list *l, void *val) {
+void list_append(struct list *l, uint8_t x) {
 	/* Add an element to the end of the list. */
 	struct list *head = l;
 
@@ -39,19 +41,21 @@ void list_append(struct list *l, void *val) {
 	}
 
 	/* create and relink nodes */
-	head->next = list_init(val);
-	head->next->prev = head->next;
+	head->next = list_init();
+	head->next->val = x;
+	head->next->prev = head;
 }
 
-struct list *list_prepend(struct list *l, void *val) {
+struct list *list_prepend(struct list *l, uint8_t x) {
 	/* Add an element to the start of the list. */
-	struct list *out = list_init(val);
+	struct list *out = list_init();
 
+	out->val = x;
 	out->next = l;
 	l->prev = out;
-	l = l->prev;
 
-	return l; /* ret new start of list due to pointer being a copy in params */
+	/* return start ptr b/c original is unaffected */
+	return l->prev;
 }
 
 struct list *list_get(const struct list *src, int index) {
@@ -59,10 +63,7 @@ struct list *list_get(const struct list *src, int index) {
 	struct list *head = (struct list *) src;
 
 	for (int i = 0; i <= index; i++) {
-		if (!head) {
-			puts("error (list_get): index out of bounds");
-			return;
-		}
+		if (!head) puts("error (list_get): index out of bounds");
 
 		head = head->next;
 	}

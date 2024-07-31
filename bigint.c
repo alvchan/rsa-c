@@ -1,21 +1,15 @@
+#include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "bigint.h"
 
 #define DEBUG
 
-struct bigint *bigint_init(unsigned int ndigits) {
-	uint8_t *tmp_d;
-
-	/* allocate space to store given # of digits */
-	if (ndigits != 0) tmp_d = malloc(sizeof(uint8_t) * ndigits);
-	else tmp_d = malloc(sizeof(uint8_t)); /* no digits, malloc a placeholder */
-
-	if (!tmp_d) {
-		puts("malloc failed to allocate memory; out of memory.");
-		exit(EXIT_FAILURE);
-	}
+struct bigint *bigint_init(void) {
+	/* Set up and allocate a bigint. */
+	struct list *data = list_init();
 
 	struct bigint *bi = malloc(sizeof(struct bigint));
 	if (!bi) {
@@ -23,73 +17,73 @@ struct bigint *bigint_init(unsigned int ndigits) {
 		exit(EXIT_FAILURE);
 	}
 
-	bi->ndigits = ndigits;
-	bi->d = tmp_d;
-	if (ndigits == 0 || ndigits == 1) bi->d[0] = 0;
+	bi->ndigits = 0;
+	bi->d = data;
 
 	return bi;
 }
 
 void bigint_free(struct bigint *bi) {
-	if (bi->d != NULL) free(bi->d);
-
+	/* Deallocate a bigint and its components. */
 	if (bi != NULL) {
+		if (bi->d != NULL) list_free(bi->d);
+
 		free(bi);
 		bi = NULL;
 	}
 }
 
-void bigint_pushc(struct bigint *bi, uint8_t x) {
-	if (!bi) {
-		bi = bigint_init(1);
-		bi->d[0] = x;
-		return;
-	}
+uint8_t bigint_getval(const struct bigint *bi, int index) {
+	/* Wrapper to access list contents more tersely. */
+	return list_get(bi->d, index)->val;
+}
 
-	uint8_t *tmp_d = realloc(bi->d, (bi->ndigits+1) * sizeof(uint8_t));
-	if (!tmp_d) {
-		puts("realloc failed to allocate memory; out of memory.");
-		exit(EXIT_FAILURE);
-	}
-	bi->d = tmp_d;
+void bigint_pushc(struct bigint *bi, uint8_t x) {
+	/* Append a digit/"character" to a bigint. */
+	if (!bi) bi = bigint_init();
+
+	if (bi->d->val == 0xff) bi->d->val = x; /* copy if node's val uninitialized */
+	else list_append(bi->d, x);
 
 	bi->ndigits++;
-	bi->d[bi->ndigits-1] = x;
 }
-
-/*
-void bigint_popc(struct bigint *bi) {
-	struct bigint *new_bi = realloc(bi, sizeof(int) * bi->ndigits);
-	if (!new_bi) {
-		puts("realloc failed to allocate memory; out of memory.");
-		exit(EXIT_FAILURE);
-	}
-	bi = new_bi;
-
-	bi->ndigits--;
-}
-*/
 
 struct bigint *bigint_add(const struct bigint *a, const struct bigint *b) {
-	struct bigint *sum = bigint_init(0);
+	/* Add values of A and B, then return resulting sum. */
+	struct bigint *sum = bigint_init();
 
-	/* TODO: consolidate */
 	const struct bigint *greatest = (a->ndigits >= b->ndigits) ? a : b;
+	struct list *greatest_head = greatest->d;
+
 	const struct bigint *least = (a->ndigits < b->ndigits) ? a : b;
+	struct list *least_head = least->d;
 
 	uint8_t carry = 0;
 	/* add up all digits in a common range */
-	for (int i = 0; i < least->ndigits; i++) { /* TODO: possibly prone to overflow */
-		uint8_t digit_sum = a->d[i] + b->d[i] + carry;
-		bigint_pushc(sum, digit_sum % 10);
+	while (least_head != NULL) {
+		assert(greatest_head->val != 0xff && "A list node was used uninitialized.");
+		assert(least_head->val != 0xff && "A list node was used uninitialized.");
+
+		uint8_t digit_sum = greatest_head->val + least_head->val + carry;
+		/* TODO: change to direct carry system */
 		carry = digit_sum / 10;
+
+		bigint_pushc(sum, digit_sum % 10);
+
+		greatest_head = greatest_head->next;
+		least_head = least_head->next;
 	}
 
 	/* default to larger bigint digits if unevenly sized */
-	for (int i = least->ndigits; i < greatest->ndigits; i++) {
-		uint8_t digit_sum = greatest->d[i] + carry;
-		bigint_pushc(sum, digit_sum % 10);
+	while (greatest_head != NULL) {
+		assert(greatest_head->val != 0xff && "A list node was used uninitialized.");
+
+		uint8_t digit_sum = greatest_head->val + carry;
 		carry = digit_sum / 10;
+
+		bigint_pushc(sum, digit_sum % 10);
+
+		greatest_head = greatest_head->next;
 	}
 
 	/* carry extra overflow digits */
@@ -103,21 +97,43 @@ struct bigint *bigint_add(const struct bigint *a, const struct bigint *b) {
 
 struct bigint *bigint_mult(const struct bigint *a, const struct bigint *b) {
 	/* Multiply A by B times and return the product. */
-	struct bigint *product = bigint_init(0);
+	struct bigint *product = bigint_init();
+
+	struct list *a_head = NULL;
+	struct list *b_head = b->d;
+	int traversals = 0; /* # of nodes/loops passed */
 
 	uint8_t carry = 0;
-	for (int i = 0; i < b->ndigits; i++) { /* B's digit counter */
-		if (b->d[i] == 0) continue;
+	while (b_head != NULL) {
+		assert(b_head->val != 0xff && "A list node was used uninitialized.");
 
-		struct bigint *row_product = bigint_init(0);
-		for (int pad = 0; pad < i; pad++) { /* lshift for every digit of B */
+		/* anything * 0 = 0, just skip */
+		if (b_head->val == 0) {
+			b_head = b_head->next;
+			traversals++;
+
+			continue;
+		}
+
+		struct bigint *row_product = bigint_init();
+
+		/* TODO: create process that can precalculate instead of appending */
+		/* lshift for every digit of B to simulate place value */
+		for (int pad = 0; pad < traversals; pad++) {
 			bigint_pushc(row_product, 0);
 		}
 
-		for (int j = 0; j < a->ndigits; j++) { /* A's digit counter */
-			long digit_product = a->d[j] * b->d[i] + carry; /* TODO: change to bigint; no guarantee on product size */
-			bigint_pushc(row_product, digit_product % 10);
+		/* multiply A by each digit of B */
+		a_head = a->d;
+		while (a_head != NULL) {
+			assert(a_head->val != 0xff && "A list node was used uninitialized.");
+
+			long digit_product = a_head->val * b_head->val + carry; /* TODO: change to bigint; no guarantee on product size */
 			carry = digit_product / 10;
+
+			bigint_pushc(row_product, digit_product % 10);
+
+			a_head = a_head->next;
 		}
 
 		/* carry extra overflow digits */
@@ -126,46 +142,69 @@ struct bigint *bigint_mult(const struct bigint *a, const struct bigint *b) {
 			carry /= 10;
 		}
 
-		struct bigint *tmp = bigint_add(product, row_product);
-		bigint_free(product);
-		product = tmp;
+		/* TODO: create bigint_add flavor that mutates instead */
+		/* set product value based on current initialization state */
+		if (product->d->val == 0xff) { /* assumed to be uninit'd */
+			product->ndigits = row_product->ndigits;
 
-		bigint_free(row_product);
+			free(product->d);
+			product->d = row_product->d;
+		} else {
+			struct bigint *tmp = bigint_add(product, row_product);
+			bigint_free(product);
+			product = tmp;
+		}
+
+		free(row_product); /* free'd normally to leave list data for product */
+
+		b_head = b_head->next;
+		traversals++;
 	}
 
 	return product;
 }
 
-void bigint_print(struct bigint *bi) {
-	if (bi->ndigits >= 1) {
-		for (int i = bi->ndigits-1; i >= 0; i--) {
-			printf("%d", bi->d[i]);
-		}
-		printf("\n");
+void bigint_println(const struct bigint *bi) {
+	/* Print all digits of a bigint. */
+	/* TODO: add circular links to list */;
+
+	struct list *head = bi->d;
+
+	while (head != NULL) {
+		printf("%d", head->val);
+
+		head = head->next;
 	}
+	printf("\n");
 }
 
 #ifdef DEBUG
 int main(void) {
-	struct bigint *x = bigint_init(2);
-	free(x->d);
-	//x->d = (int []) {2, 4};
-	x->d = (uint8_t []) {9, 9};
+	struct bigint *x = bigint_init();
+	bigint_pushc(x, 2);
+	bigint_pushc(x, 4);
+	/*
+	bigint_pushc(x, 9);
+	bigint_pushc(x, 9);
+	*/
 
-	struct bigint *y = bigint_init(2);
-	free(y->d);
-	//y->d = (int []) {5, 0};
-	y->d = (uint8_t []) {9, 9};
+	struct bigint *y = bigint_init();
+	bigint_pushc(y, 5);
+	bigint_pushc(y, 0);
+	/*
+	bigint_pushc(y, 9);
+	bigint_pushc(y, 9);
+	*/
 
 	struct bigint *sum = bigint_add(x, y);
-	bigint_print(sum);
+	bigint_println(sum);
 
 	struct bigint *product = bigint_mult(x, y);
-	bigint_print(product);
+	bigint_println(product);
 
 	bigint_free(product);
 	bigint_free(sum);
-	free(y);
-	free(x);
+	bigint_free(y);
+	bigint_free(x);
 }
 #endif
