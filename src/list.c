@@ -11,7 +11,7 @@ struct list *list_init(void) {
 
 	out->val = 0xff; /* placeholder to indicate uninitialized state */
 	out->next = NULL;
-	out->prev = NULL;
+	out->prev = out;
 
 	return out;
 }
@@ -34,14 +34,15 @@ void list_append(struct list *l, uint8_t x) {
 	struct list *head = l;
 
 	/* walk to end of list */
-	while (head->next != NULL) {
+	while (head->next != NULL)
 		head = head->next;
-	}
 
 	/* create and relink nodes */
 	head->next = list_init();
 	head->next->val = x;
 	head->next->prev = head;
+
+	l->prev = head->next;
 }
 
 struct list *list_prepend(struct list *l, uint8_t x) {
@@ -50,6 +51,7 @@ struct list *list_prepend(struct list *l, uint8_t x) {
 
 	out->val = x;
 	out->next = l;
+	out->prev = l->prev;
 	l->prev = out;
 
 	/* return start ptr b/c original is unaffected */
