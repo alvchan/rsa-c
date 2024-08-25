@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "bigint.h"
@@ -101,6 +102,37 @@ struct bigint *bigint_add(const struct bigint *a, const struct bigint *b) {
 	}
 
 	return sum;
+}
+
+struct bigint *bigint_sub(const struct bigint *a, const struct bigint *b) {
+	/* Subtract two bigints and return the difference. */
+	struct bigint *diff = bigint_init();
+
+	struct list *greatest = a;
+	struct list *least = b;
+
+	if (bigint_compare(a, b) < 0)
+		bigint_pushc(diff, 0xfe); /* add val to indicate it's negative */
+
+	uint8_t borrow = 0;
+	while (head_a && head_b) {
+		bool needs_borrow = head_a->val - head_b->val - borrow < 0;
+
+		if (!needs_borrow) {
+			bigint_pushc(diff, head_a->val - head_b->val - borrow);
+			borrow = 0;
+		} else if (head_a->next && head_a->next->val >= 1) { /* borrow extra values, if possible */
+			bigint_pushc(diff, (head_a->val + 10) - head_b->val - borrow);
+			borrow++;
+		} else if (!head_a->next || !head_b->next) {
+			return diff;
+		} else { /* can't borrow, must've messed up */
+			break;
+		}
+
+		head_a = head_a->next;
+		head_b = head_b->next;
+	}
 }
 
 struct bigint *bigint_mult(const struct bigint *a, const struct bigint *b) {
