@@ -204,6 +204,18 @@ struct bigint *bigint_mult(const struct bigint *a, const struct bigint *b) {
 	return product;
 }
 
+int bigint_mod(const struct bigint *bi, int x) {
+	struct bigint *remainder = NULL;
+
+	while (remainder >= x) {
+		struct bigint *tmp = bigint_subv(bi, x);
+		bigint_free(remainder);
+		remainder = tmp;
+	}
+
+	return remainder;
+}
+
 int bigint_compare(const struct bigint *a, const struct bigint *b) {
 	/* Check if a bigint is greater than, less than, or equal to another. */
 
