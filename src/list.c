@@ -69,36 +69,3 @@ struct list *list_get(const struct list *src, int index) {
 	return head;
 }
 
-/*
-int main(void) {
-	struct list *head = NULL;
-
-	int a = 42;
-	struct list *a_list = list_init(&a);
-	int a_next = 51;
-	list_append(a_list, &a_next);
-
-	head = a_list;
-	puts("printing a...");
-	while (head != NULL) {
-		printf("%d\n", *(int *) head->val);
-		head = head->next;
-	}
-
-	int b = 69;
-	struct list *b_list = list_init(&b);
-	int b_prev = 451;
-	b_list = list_prepend(b_list, &b_prev);
-
-	head = b_list;
-	printf("b @ %p (main)\n", b_list);
-	puts("printing b...");
-	while (head != NULL) {
-		printf("%d\n", *(int *) head->val);
-		head = head->next;
-	}
-
-	list_free(a_list);
-	list_free(b_list);
-}
-*/

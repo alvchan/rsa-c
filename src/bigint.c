@@ -174,33 +174,3 @@ void bigint_println(const struct bigint *bi) {
 	printf("\n");
 }
 
-#ifdef DEBUG
-int main(void) {
-	struct bigint *x = bigint_init();
-	bigint_pushc(x, 2);
-	bigint_pushc(x, 4);
-	/*
-	bigint_pushc(x, 9);
-	bigint_pushc(x, 9);
-	*/
-
-	struct bigint *y = bigint_init();
-	bigint_pushc(y, 5);
-	bigint_pushc(y, 0);
-	/*
-	bigint_pushc(y, 9);
-	bigint_pushc(y, 9);
-	*/
-
-	struct bigint *sum = bigint_add(x, y);
-	bigint_println(sum);
-
-	struct bigint *product = bigint_mult(x, y);
-	bigint_println(product);
-
-	bigint_free(product);
-	bigint_free(sum);
-	bigint_free(y);
-	bigint_free(x);
-}
-#endif
