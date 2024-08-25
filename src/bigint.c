@@ -160,6 +160,32 @@ struct bigint *bigint_mult(const struct bigint *a, const struct bigint *b) {
 	return product;
 }
 
+int bigint_compare(const struct bigint *a, const struct bigint *b) {
+	/* Check if a bigint is greater than, less than, or equal to another. */
+
+	/* is one just obviously larger? */
+	if (a->ndigits > b->ndigits)
+		return 1;
+	else if (a->ndigits < b->ndigits)
+		return -1;
+
+	struct list *head_a = a->d->prev;
+	struct list *head_b = b->d->prev;
+
+	/* walk digit by digit until one is definitively bigger */
+	while (head_a != a->d && head_b != b->d) {
+		if (head_a->val > head_b->val)
+			return 1;
+		else if (head_a->val < head_b->val)
+			return -1;
+
+		head_a = head_a->prev;
+		head_b = head_b->prev;
+	}
+
+	return 0;
+}
+
 void bigint_println(const struct bigint *bi) {
 	/* Print all digits of a bigint. */
 	/* TODO: add circular links to list */;
