@@ -19,6 +19,18 @@ struct bigint *bigint_init(void) {
 	return bi;
 }
 
+struct bigint *bigint_initv(long long x) {
+	/* Create a bigint from an integer value. */
+	struct bigint *bi = bigint_init();
+
+	while (x > 0) {
+		bigint_pushc(bi, x % 10);
+		x /= 10;
+	}
+
+	return bi;
+}
+
 void bigint_free(struct bigint *bi) {
 	/* Deallocate a bigint and its components. */
 	if (bi != NULL) {
