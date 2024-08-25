@@ -186,17 +186,15 @@ int bigint_compare(const struct bigint *a, const struct bigint *b) {
 	return 0;
 }
 
-void bigint_println(const struct bigint *bi) {
+void bigint_print(const struct bigint *bi) {
 	/* Print all digits of a bigint. */
-	/* TODO: add circular links to list */;
+	struct list *head = bi->d->prev;
 
-	struct list *head = bi->d;
-
-	while (head != NULL) {
+	while (head != bi->d) {
 		printf("%d", head->val);
 
-		head = head->next;
+		head = head->prev;
 	}
-	printf("\n");
+	printf("%d\n", head->val);
 }
 
