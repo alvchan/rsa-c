@@ -14,7 +14,11 @@ bool is_prime(int x) {
 
 	int a = 2;
 
-	long long b = (int) pow(a, m) % x;
+	long long a_m = 1;
+	for (int i = 0; i < m; i++)
+		a_m *= a;
+
+	long long b = a_m % x;
 	if (b == 1 || b == x-1)
 		return true;
 
