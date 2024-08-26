@@ -148,6 +148,35 @@ struct bigint *bigint_sub(const struct bigint *a, const struct bigint *b) {
 	return diff;
 }
 
+struct bigint *bigint_subv(const struct bigint *bi, int x) {
+	/* Subtract a bigint by an int. Easier to use than base form. */
+	struct bigint *diff = bigint_init();
+
+	struct list *head = bi->d;
+	/* TODO: compare bigint against int for greatest */
+	/* we currently assume bigint is larger than int */
+
+	uint8_t borrow = 0;
+	while (head && x > 0) {
+		bool needs_borrow = head->val - x%10 - borrow < 0;
+
+		if (!needs_borrow) {
+			bigint_pushc(diff, head->val - x%10 - borrow);
+			borrow = 0;
+		} else if (head->next && head->next->val >= 1) {
+			bigint_pushc(diff, (head->val + 10) - x%10 - borrow);
+			borrow++;
+		}
+
+		head = head->next;
+		x /= 10;
+	}
+
+	/* TODO: handle negative diff */
+
+	return diff;
+}
+
 struct bigint *bigint_mult(const struct bigint *a, const struct bigint *b) {
 	/* Multiply A by B times and return the product. */
 	struct bigint *product = bigint_init();
@@ -274,12 +303,8 @@ void bigint_print(const struct bigint *bi) {
 
 int main(void) {
 	struct bigint *x = bigint_initv(42);
-	struct bigint *y = bigint_initv(24);
 
-	bigint_print(x);
-	bigint_print(y);
-	bigint_print(bigint_sub(x, y));
+	bigint_print(bigint_subv(x, 24));
 
 	bigint_free(x);
-	bigint_free(y);
 }
