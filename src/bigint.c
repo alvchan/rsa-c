@@ -127,6 +127,7 @@ struct bigint *bigint_sub(const struct bigint *a, const struct bigint *b) {
 	}
 
 	uint8_t borrow = 0;
+	/* TODO: fix for uneven # of digits */
 	while (greatest && least) {
 		bool needs_borrow = greatest->val - least->val - borrow < 0;
 
