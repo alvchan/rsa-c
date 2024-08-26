@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 bool is_prime(int x) {
+	/* Test primality of a given number via the Miller-Rabin test. */
 	int m;
 	for (int k = 1; k < 10; k++) {
 		if ((x - 1) % (1 << k) == 0)

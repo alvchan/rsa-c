@@ -108,8 +108,8 @@ struct bigint *bigint_sub(const struct bigint *a, const struct bigint *b) {
 	/* Subtract two bigints and return the difference. */
 	struct bigint *diff = bigint_init();
 
-	struct list *greatest = a;
-	struct list *least = b;
+	struct list *head_a = (struct list *) a->d;
+	struct list *head_b = (struct list *) b->d;
 
 	if (bigint_compare(a, b) < 0)
 		bigint_pushc(diff, 0xfe); /* add val to indicate it's negative */
@@ -124,15 +124,13 @@ struct bigint *bigint_sub(const struct bigint *a, const struct bigint *b) {
 		} else if (head_a->next && head_a->next->val >= 1) { /* borrow extra values, if possible */
 			bigint_pushc(diff, (head_a->val + 10) - head_b->val - borrow);
 			borrow++;
-		} else if (!head_a->next || !head_b->next) {
-			return diff;
-		} else { /* can't borrow, must've messed up */
-			break;
 		}
 
 		head_a = head_a->next;
 		head_b = head_b->next;
 	}
+
+	return diff;
 }
 
 struct bigint *bigint_mult(const struct bigint *a, const struct bigint *b) {
@@ -204,6 +202,7 @@ struct bigint *bigint_mult(const struct bigint *a, const struct bigint *b) {
 	return product;
 }
 
+/*
 int bigint_mod(const struct bigint *bi, int x) {
 	struct bigint *remainder = NULL;
 
@@ -215,6 +214,7 @@ int bigint_mod(const struct bigint *bi, int x) {
 
 	return remainder;
 }
+*/
 
 int bigint_compare(const struct bigint *a, const struct bigint *b) {
 	/* Check if a bigint is greater than, less than, or equal to another. */
@@ -247,10 +247,24 @@ void bigint_print(const struct bigint *bi) {
 	struct list *head = bi->d->prev;
 
 	while (head != bi->d) {
-		printf("%d", head->val);
+		if (head->val == 0xfe)
+			printf("-");
+		else
+			printf("%d", head->val);
 
 		head = head->prev;
 	}
 	printf("%d\n", head->val);
 }
 
+int main(void) {
+	struct bigint *x = bigint_initv(42);
+	struct bigint *y = bigint_initv(24);
+
+	bigint_print(x);
+	bigint_print(y);
+	bigint_print(bigint_sub(x, y));
+
+	bigint_free(x);
+	bigint_free(y);
+}
