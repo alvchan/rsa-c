@@ -135,7 +135,7 @@ struct bigint *bigint_sub(const struct bigint *a, const struct bigint *b) {
 			borrow = 0;
 		} else if (greatest->next && greatest->next->val >= 1) { /* borrow extra values, if possible */
 			bigint_pushc(diff, (greatest->val + 10) - least->val - borrow);
-			borrow++;
+			borrow = 1; /* use up prev borrow + gain a new one */
 		}
 
 		greatest = greatest->next;
@@ -165,7 +165,7 @@ struct bigint *bigint_subv(const struct bigint *bi, int x) {
 			borrow = 0;
 		} else if (head->next && head->next->val >= 1) {
 			bigint_pushc(diff, (head->val + 10) - x%10 - borrow);
-			borrow++;
+			borrow = 1;
 		}
 
 		head = head->next;
