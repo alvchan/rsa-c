@@ -108,27 +108,36 @@ struct bigint *bigint_sub(const struct bigint *a, const struct bigint *b) {
 	/* Subtract two bigints and return the difference. */
 	struct bigint *diff = bigint_init();
 
-	struct list *head_a = (struct list *) a->d;
-	struct list *head_b = (struct list *) b->d;
+	struct list *greatest = a->d;
+	struct list *least = b->d;
+	bool negative = false;
 
-	if (bigint_compare(a, b) < 0)
-		bigint_pushc(diff, 0xfe); /* add val to indicate it's negative */
+	if (bigint_compare(a, b) < 0) {
+		/* swap vals and prepend a minus sign instead */
+		greatest = b->d;
+		least = a->d;
+
+		negative = true;
+	}
 
 	uint8_t borrow = 0;
-	while (head_a && head_b) {
-		bool needs_borrow = head_a->val - head_b->val - borrow < 0;
+	while (greatest && least) {
+		bool needs_borrow = greatest->val - least->val - borrow < 0;
 
 		if (!needs_borrow) {
-			bigint_pushc(diff, head_a->val - head_b->val - borrow);
+			bigint_pushc(diff, greatest->val - least->val - borrow);
 			borrow = 0;
-		} else if (head_a->next && head_a->next->val >= 1) { /* borrow extra values, if possible */
-			bigint_pushc(diff, (head_a->val + 10) - head_b->val - borrow);
+		} else if (greatest->next && greatest->next->val >= 1) { /* borrow extra values, if possible */
+			bigint_pushc(diff, (greatest->val + 10) - least->val - borrow);
 			borrow++;
 		}
 
-		head_a = head_a->next;
-		head_b = head_b->next;
+		greatest = greatest->next;
+		least = least->next;
 	}
+
+	if (negative)
+		bigint_pushc(diff, 0xfe);
 
 	return diff;
 }
