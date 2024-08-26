@@ -4,6 +4,9 @@
 #include <stdlib.h>
 #include "bigint.h"
 
+#define NEG 0xfe
+#define UNINIT 0xff
+
 struct bigint *bigint_init(void) {
 	/* Set up and allocate a bigint. */
 	struct list *data = list_init();
@@ -51,7 +54,7 @@ void bigint_pushc(struct bigint *bi, uint8_t x) {
 	/* Append a digit/"character" to a bigint. */
 	if (!bi) bi = bigint_init();
 
-	if (bi->d->val == 0xff) bi->d->val = x; /* copy if node's val uninitialized */
+	if (bi->d->val == UNINIT) bi->d->val = x; /* copy if node's val uninitialized */
 	else list_append(bi->d, x);
 
 	bi->ndigits++;
@@ -59,6 +62,9 @@ void bigint_pushc(struct bigint *bi, uint8_t x) {
 
 struct bigint *bigint_add(const struct bigint *a, const struct bigint *b) {
 	/* Add values of A and B, then return resulting sum. */
+
+	/* TODO: handle negative adds */
+
 	struct bigint *sum = bigint_init();
 
 	const struct bigint *greatest = (a->ndigits >= b->ndigits) ? a : b;
@@ -70,8 +76,8 @@ struct bigint *bigint_add(const struct bigint *a, const struct bigint *b) {
 	uint8_t carry = 0;
 	/* add up all digits in a common range */
 	while (least_head != NULL) {
-		assert(greatest_head->val != 0xff && "A list node was used uninitialized.");
-		assert(least_head->val != 0xff && "A list node was used uninitialized.");
+		assert(greatest_head->val != UNINIT && "A list node was used uninitialized.");
+		assert(least_head->val != UNINIT && "A list node was used uninitialized.");
 
 		uint8_t digit_sum = greatest_head->val + least_head->val + carry;
 		/* TODO: change to direct carry system */
@@ -85,7 +91,7 @@ struct bigint *bigint_add(const struct bigint *a, const struct bigint *b) {
 
 	/* default to larger bigint digits if unevenly sized */
 	while (greatest_head != NULL) {
-		assert(greatest_head->val != 0xff && "A list node was used uninitialized.");
+		assert(greatest_head->val != UNINIT && "A list node was used uninitialized.");
 
 		uint8_t digit_sum = greatest_head->val + carry;
 		carry = digit_sum / 10;
@@ -137,7 +143,7 @@ struct bigint *bigint_sub(const struct bigint *a, const struct bigint *b) {
 	}
 
 	if (negative)
-		bigint_pushc(diff, 0xfe);
+		bigint_pushc(diff, NEG);
 
 	return diff;
 }
@@ -152,7 +158,7 @@ struct bigint *bigint_mult(const struct bigint *a, const struct bigint *b) {
 
 	uint8_t carry = 0;
 	while (b_head != NULL) {
-		assert(b_head->val != 0xff && "A list node was used uninitialized.");
+		assert(b_head->val != UNINIT && "A list node was used uninitialized.");
 
 		/* anything * 0 = 0, just skip */
 		if (b_head->val == 0) {
@@ -173,7 +179,7 @@ struct bigint *bigint_mult(const struct bigint *a, const struct bigint *b) {
 		/* multiply A by each digit of B */
 		a_head = a->d;
 		while (a_head != NULL) {
-			assert(a_head->val != 0xff && "A list node was used uninitialized.");
+			assert(a_head->val != UNINIT && "A list node was used uninitialized.");
 
 			long digit_product = a_head->val * b_head->val + carry; /* TODO: change to bigint; no guarantee on product size */
 			carry = digit_product / 10;
@@ -191,7 +197,7 @@ struct bigint *bigint_mult(const struct bigint *a, const struct bigint *b) {
 
 		/* TODO: create bigint_add flavor that mutates instead */
 		/* set product value based on current initialization state */
-		if (product->d->val == 0xff) { /* assumed to be uninit'd */
+		if (product->d->val == UNINIT) { /* assumed to be uninit'd */
 			product->ndigits = row_product->ndigits;
 
 			free(product->d);
@@ -256,7 +262,7 @@ void bigint_print(const struct bigint *bi) {
 	struct list *head = bi->d->prev;
 
 	while (head != bi->d) {
-		if (head->val == 0xfe)
+		if (head->val == NEG)
 			printf("-");
 		else
 			printf("%d", head->val);
