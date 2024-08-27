@@ -287,6 +287,33 @@ int bigint_compare(const struct bigint *a, const struct bigint *b) {
 	return 0;
 }
 
+static int intlen(int x) {
+	/* Find # of digits in an integer. */
+	int len = 0;
+
+	do {
+		x /= 10;
+		len++;
+	} while (x != 0);
+
+	return len;
+}
+
+/*
+int bigint_comparev(const struct bigint *bi, int x) {
+	int xlen = intlen(x);
+
+	if (bi->ndigits > xlen)
+		return 1;
+	else if (bi->ndigits < xlen)
+		return -1;
+
+	struct list *head = a->d->prev;
+
+	while (head != a->d && x > 0
+}
+*/
+
 void bigint_print(const struct bigint *bi) {
 	/* Print all digits of a bigint. */
 	struct list *head = bi->d->prev;
