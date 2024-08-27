@@ -332,7 +332,9 @@ void bigint_print(const struct bigint *bi) {
 int main(void) {
 	struct bigint *x = bigint_initv(42);
 
-	bigint_print(bigint_subv(x, 24));
+	struct bigint *diff = bigint_subv(x, 24);
+	bigint_print(diff);
 
+	bigint_free(diff);
 	bigint_free(x);
 }
