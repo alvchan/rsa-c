@@ -4,7 +4,7 @@
 #include "random.h"
 
 /* TODO: check if mt_vec array survives */
-mt_vec mt_srand(uint32_t seed) {
+static mt_vec mt_srand(uint32_t seed) {
 	/* Initialize state array with a 32-bit seed. */
 	mt_vec mt;
 
@@ -15,7 +15,7 @@ mt_vec mt_srand(uint32_t seed) {
 	return mt;
 }
 
-uint32_t mt_rand(uint32_t seed) {
+static uint32_t mt_rand(uint32_t seed) {
 	mt_vec mt = mt_srand(seed);
 
 	uint32_t y;
@@ -49,8 +49,7 @@ uint32_t mt_rand(uint32_t seed) {
 	return y;
 }
 
-int main(void) {
+uint32_t rng_rand(void) {
 	srand(time(NULL));
-	for (int i = 0; i < 1000; i++)
-		printf("%u\n", mt_rand(rand()));
+	return mt_rand(rand());
 }
