@@ -11,3 +11,5 @@ typedef struct {
 	uint32_t state[N];
 	int32_t idx;
 } mt_vec;
+
+uint32_t rng_rand(void);
