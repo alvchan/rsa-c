@@ -287,8 +287,11 @@ int bigint_compare(const struct bigint *a, const struct bigint *b) {
 	return 0;
 }
 
+/*
 static int intlen(int x) {
+*/
 	/* Find # of digits in an integer. */
+/*
 	int len = 0;
 
 	do {
@@ -298,6 +301,7 @@ static int intlen(int x) {
 
 	return len;
 }
+*/
 
 /*
 int bigint_comparev(const struct bigint *bi, int x) {
