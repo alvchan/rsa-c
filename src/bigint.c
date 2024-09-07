@@ -28,7 +28,7 @@ struct bigint *bigint_initv(long long x) {
 	struct bigint *bi = bigint_init();
 
 	while (x > 0) {
-		bigint_pushc(bi, x % 10);
+		bigint_push(bi, x % 10);
 		x /= 10;
 	}
 
@@ -50,7 +50,7 @@ uint8_t bigint_getval(const struct bigint *bi, int index) {
 	return list_get(bi->d, index)->val;
 }
 
-void bigint_pushc(struct bigint *bi, uint8_t x) {
+void bigint_push(struct bigint *bi, uint8_t x) {
 	/* Append a digit/"character" to a bigint. */
 	if (!bi) bi = bigint_init();
 
@@ -83,7 +83,7 @@ struct bigint *bigint_add(const struct bigint *a, const struct bigint *b) {
 		/* TODO: change to direct carry system */
 		carry = digit_sum / 10;
 
-		bigint_pushc(sum, digit_sum % 10);
+		bigint_push(sum, digit_sum % 10);
 
 		greatest_head = greatest_head->next;
 		least_head = least_head->next;
@@ -96,14 +96,14 @@ struct bigint *bigint_add(const struct bigint *a, const struct bigint *b) {
 		uint8_t digit_sum = greatest_head->val + carry;
 		carry = digit_sum / 10;
 
-		bigint_pushc(sum, digit_sum % 10);
+		bigint_push(sum, digit_sum % 10);
 
 		greatest_head = greatest_head->next;
 	}
 
 	/* carry extra overflow digits */
 	while (carry > 0) {
-		bigint_pushc(sum, carry % 10);
+		bigint_push(sum, carry % 10);
 		carry /= 10;
 	}
 
@@ -132,10 +132,10 @@ struct bigint *bigint_sub(const struct bigint *a, const struct bigint *b) {
 		bool needs_borrow = greatest->val - least->val - borrow < 0;
 
 		if (!needs_borrow) {
-			bigint_pushc(diff, greatest->val - least->val - borrow);
+			bigint_push(diff, greatest->val - least->val - borrow);
 			borrow = 0;
 		} else if (greatest->next && greatest->next->val >= 1) { /* borrow extra values, if possible */
-			bigint_pushc(diff, (greatest->val + 10) - least->val - borrow);
+			bigint_push(diff, (greatest->val + 10) - least->val - borrow);
 			borrow = 1; /* use up prev borrow + gain a new one */
 		}
 
@@ -144,7 +144,7 @@ struct bigint *bigint_sub(const struct bigint *a, const struct bigint *b) {
 	}
 
 	if (negative)
-		bigint_pushc(diff, NEG);
+		bigint_push(diff, NEG);
 
 	return diff;
 }
@@ -162,10 +162,10 @@ struct bigint *bigint_subv(const struct bigint *bi, int x) {
 		bool needs_borrow = head->val - x%10 - borrow < 0;
 
 		if (!needs_borrow) {
-			bigint_pushc(diff, head->val - x%10 - borrow);
+			bigint_push(diff, head->val - x%10 - borrow);
 			borrow = 0;
 		} else if (head->next && head->next->val >= 1) {
-			bigint_pushc(diff, (head->val + 10) - x%10 - borrow);
+			bigint_push(diff, (head->val + 10) - x%10 - borrow);
 			borrow = 1;
 		}
 
@@ -203,7 +203,7 @@ struct bigint *bigint_mult(const struct bigint *a, const struct bigint *b) {
 		/* TODO: create process that can precalculate instead of appending */
 		/* lshift for every digit of B to simulate place value */
 		for (int pad = 0; pad < traversals; pad++) {
-			bigint_pushc(row_product, 0);
+			bigint_push(row_product, 0);
 		}
 
 		/* multiply A by each digit of B */
@@ -214,14 +214,14 @@ struct bigint *bigint_mult(const struct bigint *a, const struct bigint *b) {
 			long digit_product = a_head->val * b_head->val + carry; /* TODO: change to bigint; no guarantee on product size */
 			carry = digit_product / 10;
 
-			bigint_pushc(row_product, digit_product % 10);
+			bigint_push(row_product, digit_product % 10);
 
 			a_head = a_head->next;
 		}
 
 		/* carry extra overflow digits */
 		while (carry > 0) {
-			bigint_pushc(row_product, carry % 10);
+			bigint_push(row_product, carry % 10);
 			carry /= 10;
 		}
 
@@ -246,6 +246,18 @@ struct bigint *bigint_mult(const struct bigint *a, const struct bigint *b) {
 
 	return product;
 }
+
+/*
+struct bigint bigint_div(const struct bigint *a, const struct bigint *b) {
+	struct bigint *dividend = a;
+	dividend->d = dividend->d->prev;
+
+	struct bigint *divisor = b;
+	divisor->d = divisor->d->prev;
+
+	
+}
+*/
 
 /*
 int bigint_mod(const struct bigint *bi, int x) {
