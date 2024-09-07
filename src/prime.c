@@ -1,9 +1,6 @@
-#include <math.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include "prime.h"
 
-bool is_prime(int x) {
+bool prime_p(int x) {
 	/* Test primality of a given number via the Miller-Rabin test. */
 	int m;
 	for (int k = 1; k < 10; k++) {
@@ -35,11 +32,13 @@ bool is_prime(int x) {
 	return false;
 }
 
+/*
 int main(void) {
-	printf("%d\n", is_prime(53));
-	printf("%d\n", is_prime(55));
-	printf("%d\n", is_prime(11));
-	printf("%d\n", is_prime(13));
-	printf("%d\n", is_prime(14));
-	printf("%d\n", is_prime(101));
+	printf("%d\n", prime_p(53));
+	printf("%d\n", prime_p(55));
+	printf("%d\n", prime_p(11));
+	printf("%d\n", prime_p(13));
+	printf("%d\n", prime_p(14));
+	printf("%d\n", prime_p(101));
 }
+*/
